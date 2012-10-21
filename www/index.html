@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/bootstrap.min.css">
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/jquery.min.js"></script>
+    <script src="/underscore.min.js"></script>
+    <script src="/raphael.min.js"></script>
+    <script src="/client.js"></script>
+    <script src="/catan.js"></script>
+    <script>
+      $(function() {
+        new Catan();
+      });
+    </script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="span6 offset3">
+          <div class="centered">
+            <h1>Catan</h1>
+          </div>
+          <div id="board"></div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+

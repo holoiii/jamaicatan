@@ -1,0 +1,8 @@
+.centered {
+  text-align: center;
+}
+
+#chat-area {
+  height: 500px;
+  overflow: scroll;
+}
