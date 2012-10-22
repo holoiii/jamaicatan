@@ -22,9 +22,14 @@ _.extend(Catan.prototype, {
       var xStartCoord = (5 % rowNum == 0) ? 1 : 0; //1, 0, 0, 0, 1
       var length = (rowNum % 2) + 4 - (xStartCoord * 2); //3, 4, 5, 4, 3
       for (var x = xStartCoord; x < xStartCoord + length; x++) {
-        this.board.push(new Tile(Math.floor((Math.random()*5)), x, rowNum - 1));
+        tileTypes = _.shuffle(tileTypes);
+        this.board.push(new Tile(tileTypes.pop(), x, rowNum - 1));
       }
     }
+  },
+
+  populateBoardWithChanceTiles: function() {
+
   }
 });
 
@@ -119,3 +124,8 @@ _.extend(Tile.prototype, {
   }
 });
 
+function chanceTile(tile, letter, number) {
+  this.tile = tile;
+  this.letter = letter;
+  this.number = number;
+}
