@@ -12,14 +12,14 @@ _.extend(Board.prototype, {
   generateTiles: function() {
     //valid tile types and counts
     var tileTypes = [0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5];
-    var tiles = [];
+    var tiles = {};
     //fills map array with tiles
     for (var rowNum = 1; rowNum < 6; rowNum++) {
       var xStartCoord = (5 % rowNum == 0) ? 1 : 0; //1, 0, 0, 0, 1
       var length = (rowNum % 2) + 4 - (xStartCoord * 2); //3, 4, 5, 4, 3
       for (var x = xStartCoord; x < xStartCoord + length; x++) {
         tileTypes = _.shuffle(tileTypes);
-        tiles.push(new Tile(tileTypes.pop(), x, rowNum - 1));
+        tiles[[x,rowNum]] = new Tile(tileTypes.pop(), x, rowNum - 1);
       }
     }
     return tiles;
@@ -30,6 +30,10 @@ _.extend(Board.prototype, {
     _.each(this.tiles, function(tile) {
       tile.draw(paper);
     }, this);
+  },
+
+  inOrderTiles: function() {
+    
   }
 });
 
