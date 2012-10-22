@@ -28,28 +28,28 @@ _.extend(Board.prototype, {
 
   generateChanceTiles: function(resourceTiles) {
     var chanceTiles = [
-      ['A', 5],
-      ['B', 2],
-      ['C', 6],
-      ['D', 3],
-      ['E', 8],
-      ['F', 10],
-      ['G', 9],
-      ['H', 12],
-      ['I', 11],
-      ['J', 4],
-      ['K', 8],
-      ['L', 10],
-      ['M', 9],
-      ['N', 4],
-      ['O', 5],
-      ['P', 6],
-      ['Q', 3],
-      ['R', 11]
+      ['A', 5,  4],
+      ['B', 2,  1],
+      ['C', 6,  5],
+      ['D', 3,  2],
+      ['E', 8,  5],
+      ['F', 10, 3],
+      ['G', 9,  4],
+      ['H', 12, 1],
+      ['I', 11, 2],
+      ['J', 4,  3],
+      ['K', 8,  5],
+      ['L', 10, 3],
+      ['M', 9,  4],
+      ['N', 4,  3],
+      ['O', 5,  4],
+      ['P', 6,  5],
+      ['Q', 3,  2],
+      ['R', 11, 2]
     ]
     _.each(this.scopedResourceTiles(resourceTiles), function(tile) {
       var placedTile = chanceTiles.shift();
-      tile.chanceTile = new chanceTile(placedTile[0], placedTile[1]);
+      tile.chanceTile = new chanceTile(placedTile[0], placedTile[1], placedTile[2]);
     });
   },
 
@@ -244,9 +244,10 @@ _.extend(resourceTile.prototype, {
   }
 });
 
-function chanceTile(letter, number) {
+function chanceTile(letter, number, dots) {
   this.letter = letter;
   this.number = number;
+  this.dots = dots;
 }
 
 _.extend(chanceTile.prototype, {
@@ -254,7 +255,23 @@ _.extend(chanceTile.prototype, {
     var boundingBox = tile.mapElm.getBBox();
     var x = boundingBox.x + boundingBox.width / 2;
     var y = boundingBox.y + boundingBox.height / 2;
+    var tileContent = paper.set();
 
-    this.mapElm = paper.circle(x, y, 20).attr({fill: 'tan'});
+    //circle
+    this.mapElm = paper.circle(x, y, 25).attr({fill: 'tan'});
+    //letter
+    tileContent.push(paper.text(x, y - 15, this.letter));
+    //number
+    tileContent.push(paper.text(x, y, this.number).attr({'font-size': 20, 'font-weight': 'bold'}));
+
+    for(var i = 0; i < this.dots; i++) {
+      var stepSize = i * 10;
+      var xStart = x - (this.dots * i + this.dots * 2);
+      tileContent.push(paper.circle(xStart + stepSize, y + 15, 1).attr({fill: 'black'}));
+    }
+    //red highlighting
+    if(_.contains([6, 8], this.number)) {
+      tileContent.attr({fill: 'red', stroke: 'red'});
+    }
   }
 });
