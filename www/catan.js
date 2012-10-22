@@ -1,11 +1,10 @@
 function Catan() {
   this.paper = Raphael(document.getElementById("board"), 500, 500);
-  this.board = new Board(this.paper);
-  this.board.draw();
+  this.board = new Board();
+  this.board.draw(this.paper);
 }
 
-function Board(paper) {
-  this.paper = paper;
+function Board() {
   this.resourceTiles = this.generateResourceTiles();
   this.generateChanceTiles(this.inOrderTiles());
 }
@@ -36,8 +35,8 @@ _.extend(Board.prototype, {
   draw: function(paper) {
     //draws map depending on where tiles are in array
     _.each(this.resourceTiles, function(tile) {
-      tile.draw(this.paper);
-      tile.chanceTile.draw(tile, this.paper);
+      tile.draw(paper);
+      tile.chanceTile.draw(tile, paper);
     }, this);
   },
 
