@@ -5,12 +5,12 @@ function Catan() {
 }
 
 function Board() {
-  this.tiles = this.generateTiles();
-  console.log(this.inOrderTiles());
+  this.resourceTiles = this.generateResourceTiles();
+  this.generateChanceTiles(this.inOrderTiles());
 }
 
 _.extend(Board.prototype, {
-  generateTiles: function() {
+  generateResourceTiles: function() {
     //valid tile types and counts
     var tileTypes = [0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5];
     var tiles = {};
@@ -20,15 +20,19 @@ _.extend(Board.prototype, {
       var length = (rowNum % 2) + 4 - (xStartCoord * 2); //3, 4, 5, 4, 3
       for (var x = xStartCoord; x < xStartCoord + length; x++) {
         tileTypes = _.shuffle(tileTypes);
-        tiles[[x,rowNum - 1]] = new Tile(tileTypes.pop(), x, rowNum - 1);
+        tiles[[x,rowNum - 1]] = new resourceTile(tileTypes.pop(), x, rowNum - 1);
       }
     }
     return tiles;
   },
 
+  generateChanceTiles: function() {
+
+  },
+
   draw: function(paper) {
     //draws map depending on where tiles are in array
-    _.each(this.tiles, function(tile) {
+    _.each(this.resourceTiles, function(tile) {
       tile.draw(paper);
     }, this);
   },
@@ -116,14 +120,14 @@ _.extend(Board.prototype, {
   }
 });
 
-function Tile(type, x, y) {
+function resourceTile(type, x, y) {
   this.type = type;
   this.x = x;
   this.y = y;
   this.color = this.tileColor();
 }
 
-_.extend(Tile.prototype, {
+_.extend(resourceTile.prototype, {
   tileColor: function() {
     var color = '';
     switch(this.type) {
