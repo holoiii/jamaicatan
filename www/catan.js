@@ -6,6 +6,7 @@ function Catan() {
 
 function Board() {
   this.tiles = this.generateTiles();
+  console.log(this.inOrderTiles());
 }
 
 _.extend(Board.prototype, {
@@ -19,7 +20,7 @@ _.extend(Board.prototype, {
       var length = (rowNum % 2) + 4 - (xStartCoord * 2); //3, 4, 5, 4, 3
       for (var x = xStartCoord; x < xStartCoord + length; x++) {
         tileTypes = _.shuffle(tileTypes);
-        tiles[[x,rowNum]] = new Tile(tileTypes.pop(), x, rowNum - 1);
+        tiles[[x,rowNum - 1]] = new Tile(tileTypes.pop(), x, rowNum - 1);
       }
     }
     return tiles;
@@ -33,7 +34,85 @@ _.extend(Board.prototype, {
   },
 
   inOrderTiles: function() {
-    
+    var startTile = this.tiles[[1,0]];
+    startTile.flagged = true;
+    startTile.dir = 0;
+    return _.compact(_.flatten([startTile, this.nextInOrderTile(startTile)]));
+  },
+
+  nextInOrderTile: function(startTile) {
+    //try bottom left first, go CC
+    if(!startTile) {
+      return;
+    }
+
+    var nextTile;
+
+    //even
+    if(startTile.y % 2 == 0) {
+      var xShiftB = -1;
+      var xShiftT = 0;
+    } else { //odd
+      var xShiftB = 0;
+      var xShiftT = 1;
+    }
+
+    var bottomLeft  = this.tiles[[startTile.x     + xShiftB, startTile.y + 1]];
+    var bottomRight = this.tiles[[startTile.x + 1 + xShiftB, startTile.y + 1]];
+    var right       = this.tiles[[startTile.x + 1          , startTile.y    ]];
+    var topRight    = this.tiles[[startTile.x     + xShiftT, startTile.y - 1]];
+    var topLeft     = this.tiles[[startTile.x - 1 + xShiftT, startTile.y - 1]];
+    var left        = this.tiles[[startTile.x - 1         , startTile.y    ]];
+
+    if((!bottomLeft || bottomLeft.flagged) && startTile.dir == 0) {
+      startTile.dir = 1;
+    }
+
+    if((!bottomRight || bottomRight.flagged) && startTile.dir == 1) {
+      startTile.dir = 2;
+    }
+
+    if((!right || right.flagged) && startTile.dir == 2) {
+      startTile.dir = 3;
+    }
+
+    if((!topRight || topRight.flagged) && startTile.dir == 3) {
+      startTile.dir = 4;
+    }
+
+    if((!topLeft || topLeft.flagged) && startTile.dir == 4) {
+      startTile.dir = 5;
+    }
+
+    if((!left || left.flagged) && startTile.dir == 5) {
+      startTile.dir = 0;
+    }
+
+    if(bottomLeft && !bottomLeft.flagged && startTile.dir == 0) {
+      nextTile = bottomLeft;
+      nextTile.dir = 0;
+    } else if (bottomRight && !bottomRight.flagged && startTile.dir == 1) {
+      nextTile = bottomRight;
+      nextTile.dir = 1;
+    } else if (right && !right.flagged && startTile.dir == 2) {
+      nextTile = right;
+      nextTile.dir = 2;
+    } else if (topRight && !topRight.flagged && startTile.dir == 3) {
+      nextTile = topRight;
+      nextTile.dir = 3;
+    } else if (topLeft && !topLeft.flagged && startTile.dir == 4) {
+      nextTile = topLeft;
+      nextTile.dir = 4;
+    } else if (left && !left.flagged && startTile.dir == 5) {
+      nextTile = left;
+      nextTile.dir = 5;
+    }
+
+    if(nextTile) {
+      nextTile.flagged = true;
+    }
+
+    return [nextTile, this.nextInOrderTile(nextTile)];
   }
 });
 
