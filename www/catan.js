@@ -49,18 +49,24 @@ _.extend(Board.prototype, {
     ]
     _.each(this.scopedResourceTiles(resourceTiles), function(tile) {
       var placedTile = chanceTiles.shift();
-      tile.chanceTile = new chanceTile(placedTile[0], placedTile[1], placedTile[2]);
+      tile.chanceTile = new chanceTile(tile, placedTile[0], placedTile[1], placedTile[2]);
     });
   },
 
   draw: function(paper) {
-    //draws map depending on where tiles are in array
+    //draw tiles
     _.each(this.resourceTiles, function(tile) {
       tile.draw(paper);
+    });
+    //draw chance tiles and nodes (split up so no overlap)
+    _.each(this.scopedResourceTiles(this.resourceTiles), function(tile) {
       if(tile.type != 5) {
-        tile.chanceTile.draw(tile, paper);
+        tile.chanceTile.draw(paper);
+        _.each(tile.nodes, function(node) {
+          node.draw(paper);
+        });
       }
-    }, this);
+    })
   },
 
   inOrderTiles: function() {
@@ -158,6 +164,8 @@ function resourceTile(type, x, y) {
   this.x = x;
   this.y = y;
   this.color = this.tileColor();
+  //there will be overlap between tiles, this is ok/desirable!
+  this.nodes = this.generateNodes();
 }
 
 _.extend(resourceTile.prototype, {
@@ -185,49 +193,58 @@ _.extend(resourceTile.prototype, {
     return color;
   },
 
+  generateNodes: function() {
+    var nodes = []
+    for(var i = 0; i < 6; i++) {
+      nodes.push(new Node(this, i));
+    }
+    return nodes;
+  },
+
   draw: function(paper) {
-    var width = paper.width / 5
-    var height = paper.height / 8;
-    var halfWidth = width / 2;
-    var halfHeight = height / 2;
-    var oneAndHalfHeight = halfHeight + height;
-    var twiceHeight = height * 2;
+    var margin = 15;
+    this.width = (paper.width - 30) / 5
+    this.height = (paper.height - 30) / 8;
+    this.halfWidth = this.width / 2;
+    this.halfHeight = this.height / 2;
+    var oneAndHalfHeight = this.halfHeight + this.height;
+    var twiceHeight = this.height * 2;
 
     //even
     if (this.y % 2 == 0) {
-      var startX = this.x * width;
+      var startX = this.x * this.width + margin;
     } else { //odd
-      var startX = this.x * width + halfWidth;
+      var startX = this.x * this.width + this.halfWidth + margin;
     }
 
     var pointTopLeft = {
       x: startX,
-      y: this.y * oneAndHalfHeight + halfHeight
+      y: this.y * oneAndHalfHeight + this.halfHeight + margin
     }
 
     var pointTop = {
-      x: startX + halfWidth,
-      y: this.y * oneAndHalfHeight
+      x: startX + this.halfWidth,
+      y: this.y * oneAndHalfHeight + margin
     }
 
     var pointTopRight = {
-      x: startX + width,
-      y: this.y * oneAndHalfHeight + halfHeight
+      x: startX + this.width,
+      y: this.y * oneAndHalfHeight + this.halfHeight + margin
     }
 
     var pointBottomRight = {
-      x: startX + width,
-      y: this.y * oneAndHalfHeight + oneAndHalfHeight
+      x: startX + this.width,
+      y: this.y * oneAndHalfHeight + oneAndHalfHeight + margin
     }
 
     var pointBottom = {
-      x: startX + halfWidth,
-      y: this.y * oneAndHalfHeight + twiceHeight
+      x: startX + this.halfWidth,
+      y: this.y * oneAndHalfHeight + twiceHeight + margin
     }
 
     var pointBottomLeft = {
       x: startX,
-      y: this.y * oneAndHalfHeight + oneAndHalfHeight
+      y: this.y * oneAndHalfHeight + oneAndHalfHeight + margin
     }
 
     var path =
@@ -244,15 +261,16 @@ _.extend(resourceTile.prototype, {
   }
 });
 
-function chanceTile(letter, number, dots) {
+function chanceTile(tile, letter, number, dots) {
+  this.tile = tile;
   this.letter = letter;
   this.number = number;
   this.dots = dots;
 }
 
 _.extend(chanceTile.prototype, {
-  draw: function(tile, paper) {
-    var boundingBox = tile.mapElm.getBBox();
+  draw: function(paper) {
+    var boundingBox = this.tile.mapElm.getBBox();
     var x = boundingBox.x + boundingBox.width / 2;
     var y = boundingBox.y + boundingBox.height / 2;
     var tileContent = paper.set();
@@ -273,5 +291,50 @@ _.extend(chanceTile.prototype, {
     if(_.contains([6, 8], this.number)) {
       tileContent.attr({fill: 'red', stroke: 'red'});
     }
+  }
+});
+
+function Node(tile, position) {
+  this.tile = tile;
+  //0, 1, 2, 3, 4, 5 (BL, B, BR, TR, T, TL)
+  this.position = position;
+}
+
+_.extend(Node.prototype, {
+  draw: function(paper) {
+    var boundingBox = this.tile.mapElm.getBBox();
+    var x = boundingBox.x + boundingBox.width / 2;
+    var y = boundingBox.y + boundingBox.height / 2;
+    var nodeSet = paper.set();
+    var nodeRadius = 15;
+    switch(this.position) {
+      case 0: //BL
+        nodeSet.push(paper.circle(x - this.tile.halfWidth, y + this.tile.halfHeight, nodeRadius));
+        break;
+      case 1: //B
+        nodeSet.push(paper.circle(x, y + this.tile.height, nodeRadius));
+        break;
+      case 2: //BR
+        nodeSet.push(paper.circle(x + this.tile.halfWidth, y + this.tile.halfHeight, nodeRadius));
+        break;
+      case 3: //TR
+        nodeSet.push(paper.circle(x + this.tile.halfWidth, y - this.tile.halfHeight, nodeRadius));
+        break;
+      case 4: //T
+        nodeSet.push(paper.circle(x, y - this.tile.height, nodeRadius));
+        break;
+      case 5: //TL
+        nodeSet.push(paper.circle(x - this.tile.halfWidth, y - this.tile.halfHeight, nodeRadius));
+        break;
+    }
+    nodeSet.attr({fill: 'pink', 'fill-opacity': 0.0, 'stroke-width': 0});
+    nodeSet.hover(
+      function(e) {
+        this.attr({'fill-opacity': 1});
+      },
+      function(e) {
+        this.attr({'fill-opacity': 0});
+      }
+    );
   }
 });
