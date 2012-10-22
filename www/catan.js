@@ -1,10 +1,11 @@
 function Catan() {
   this.paper = Raphael(document.getElementById("board"), 500, 500);
-  this.board = new Board();
-  this.board.draw(this.paper);
+  this.board = new Board(this.paper);
+  this.board.draw();
 }
 
-function Board() {
+function Board(paper) {
+  this.paper = paper;
   this.resourceTiles = this.generateResourceTiles();
   this.generateChanceTiles(this.inOrderTiles());
 }
@@ -26,19 +27,22 @@ _.extend(Board.prototype, {
     return tiles;
   },
 
-  generateChanceTiles: function() {
-
+  generateChanceTiles: function(resourceTiles) {
+    _.each(resourceTiles, function(tile) {
+      tile.chanceTile = new chanceTile('A', 1);
+    });
   },
 
   draw: function(paper) {
     //draws map depending on where tiles are in array
     _.each(this.resourceTiles, function(tile) {
-      tile.draw(paper);
+      tile.draw(this.paper);
+      tile.chanceTile.draw(tile, this.paper);
     }, this);
   },
 
   inOrderTiles: function() {
-    var startTile = this.tiles[[1,0]];
+    var startTile = this.resourceTiles[[1,0]];
     startTile.flagged = true;
     startTile.dir = 0;
     return _.compact(_.flatten([startTile, this.nextInOrderTile(startTile)]));
@@ -61,12 +65,12 @@ _.extend(Board.prototype, {
       var xShiftT = 1;
     }
 
-    var bottomLeft  = this.tiles[[startTile.x     + xShiftB, startTile.y + 1]];
-    var bottomRight = this.tiles[[startTile.x + 1 + xShiftB, startTile.y + 1]];
-    var right       = this.tiles[[startTile.x + 1          , startTile.y    ]];
-    var topRight    = this.tiles[[startTile.x     + xShiftT, startTile.y - 1]];
-    var topLeft     = this.tiles[[startTile.x - 1 + xShiftT, startTile.y - 1]];
-    var left        = this.tiles[[startTile.x - 1         , startTile.y    ]];
+    var bottomLeft  = this.resourceTiles[[startTile.x     + xShiftB, startTile.y + 1]];
+    var bottomRight = this.resourceTiles[[startTile.x + 1 + xShiftB, startTile.y + 1]];
+    var right       = this.resourceTiles[[startTile.x + 1          , startTile.y    ]];
+    var topRight    = this.resourceTiles[[startTile.x     + xShiftT, startTile.y - 1]];
+    var topLeft     = this.resourceTiles[[startTile.x - 1 + xShiftT, startTile.y - 1]];
+    var left        = this.resourceTiles[[startTile.x - 1         , startTile.y    ]];
 
     if((!bottomLeft || bottomLeft.flagged) && startTile.dir == 0) {
       startTile.dir = 1;
@@ -206,13 +210,22 @@ _.extend(resourceTile.prototype, {
       "L" + pointBottomLeft.x + "," + pointBottomLeft.y +
       "L" + pointTopLeft.x + "," + pointTopLeft.y
 
-    var hexagon = paper.path(path);
-    hexagon.attr({fill: this.color});
+    this.mapElm = paper.path(path);
+    this.mapElm.attr({fill: this.color});
   }
 });
 
-function chanceTile(tile, letter, number) {
-  this.tile = tile;
+function chanceTile(letter, number) {
   this.letter = letter;
   this.number = number;
 }
+
+_.extend(chanceTile.prototype, {
+  draw: function(tile, paper) {
+    var boundingBox = tile.mapElm.getBBox();
+    var x = boundingBox.x + boundingBox.width / 2;
+    var y = boundingBox.y + boundingBox.height / 2;
+
+    this.mapElm = paper.circle(x, y, 10).attr({fill: 'tan'});
+  }
+});
