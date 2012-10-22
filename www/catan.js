@@ -1,5 +1,5 @@
 function Catan() {
-  this.paper = Raphael(document.getElementById("board"), 500, 500);
+  this.paper = Raphael(document.getElementById("board"), 700, 700);
   this.board = new Board();
   this.board.draw(this.paper);
 }
@@ -27,8 +27,29 @@ _.extend(Board.prototype, {
   },
 
   generateChanceTiles: function(resourceTiles) {
-    _.each(resourceTiles, function(tile) {
-      tile.chanceTile = new chanceTile('A', 1);
+    var chanceTiles = [
+      ['A', 5],
+      ['B', 2],
+      ['C', 6],
+      ['D', 3],
+      ['E', 8],
+      ['F', 10],
+      ['G', 9],
+      ['H', 12],
+      ['I', 11],
+      ['J', 4],
+      ['K', 8],
+      ['L', 10],
+      ['M', 9],
+      ['N', 4],
+      ['O', 5],
+      ['P', 6],
+      ['Q', 3],
+      ['R', 11]
+    ]
+    _.each(this.scopedResourceTiles(resourceTiles), function(tile) {
+      var placedTile = chanceTiles.shift();
+      tile.chanceTile = new chanceTile(placedTile[0], placedTile[1]);
     });
   },
 
@@ -36,7 +57,9 @@ _.extend(Board.prototype, {
     //draws map depending on where tiles are in array
     _.each(this.resourceTiles, function(tile) {
       tile.draw(paper);
-      tile.chanceTile.draw(tile, paper);
+      if(tile.type != 5) {
+        tile.chanceTile.draw(tile, paper);
+      }
     }, this);
   },
 
@@ -120,6 +143,13 @@ _.extend(Board.prototype, {
     }
 
     return [nextTile, this.nextInOrderTile(nextTile)];
+  },
+
+  scopedResourceTiles: function(resourceTiles) {
+    //Collection without robber tile
+    return _.reject(resourceTiles, function(tile) {
+      return tile.type == 5;
+    });
   }
 });
 
@@ -225,6 +255,6 @@ _.extend(chanceTile.prototype, {
     var x = boundingBox.x + boundingBox.width / 2;
     var y = boundingBox.y + boundingBox.height / 2;
 
-    this.mapElm = paper.circle(x, y, 10).attr({fill: 'tan'});
+    this.mapElm = paper.circle(x, y, 20).attr({fill: 'tan'});
   }
 });

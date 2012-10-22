@@ -2,7 +2,7 @@
   text-align: center;
 }
 
-#chat-area {
-  height: 500px;
-  overflow: scroll;
+#board {
+  margin: 0 auto;
+  width: 700px;
 }
