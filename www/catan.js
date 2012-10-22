@@ -1,35 +1,35 @@
 function Catan() {
   this.paper = Raphael(document.getElementById("board"), 500, 500);
-  this.board = [];
-  this.generateBoard();
-  this.drawMap();
+  this.board = new Board();
+  this.board.draw(this.paper);
 }
 
-_.extend(Catan.prototype, {
-  drawMap: function () {
-    //draws map depending on where tiles are in array
-    _.each(this.board, function(tile) {
-      tile.draw(this.paper);
-    }, this);
-  },
+function Board() {
+  this.tiles = this.generateTiles();
+}
 
-  generateBoard: function () {
+_.extend(Board.prototype, {
+  generateTiles: function() {
     //valid tile types and counts
     var tileTypes = [0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5];
-
+    var tiles = [];
     //fills map array with tiles
     for (var rowNum = 1; rowNum < 6; rowNum++) {
       var xStartCoord = (5 % rowNum == 0) ? 1 : 0; //1, 0, 0, 0, 1
       var length = (rowNum % 2) + 4 - (xStartCoord * 2); //3, 4, 5, 4, 3
       for (var x = xStartCoord; x < xStartCoord + length; x++) {
         tileTypes = _.shuffle(tileTypes);
-        this.board.push(new Tile(tileTypes.pop(), x, rowNum - 1));
+        tiles.push(new Tile(tileTypes.pop(), x, rowNum - 1));
       }
     }
+    return tiles;
   },
 
-  populateBoardWithChanceTiles: function() {
-
+  draw: function(paper) {
+    //draws map depending on where tiles are in array
+    _.each(this.tiles, function(tile) {
+      tile.draw(paper);
+    }, this);
   }
 });
 
