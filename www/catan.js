@@ -1,8 +1,15 @@
 function Catan() {
   this.paper = Raphael(document.getElementById("board"), 700, 700);
-  this.board = new Board();
-  this.board.draw(this.paper);
+  this.startNewGame();
 }
+
+_.extend(Catan.prototype, {
+  startNewGame: function() {
+    this.board = new Board();
+    this.board.draw(this.paper);
+    this.players = [new Player('Steve'), new Player('Carl')];
+  }
+})
 
 function Board() {
   this.resourceTiles = this.generateResourceTiles();
@@ -23,6 +30,9 @@ _.extend(Board.prototype, {
         tiles[[x,rowNum - 1]] = new resourceTile(tileTypes.pop(), x, rowNum - 1);
       }
     }
+    _.each(tiles, function(tile) {
+      tile.buildNeighbors();
+    });
     return tiles;
   },
 
@@ -163,6 +173,7 @@ function resourceTile(type, x, y) {
   this.type = type;
   this.x = x;
   this.y = y;
+  this.neighbors = [];
   this.color = this.tileColor();
   //there will be overlap between tiles, this is ok/desirable!
   this.nodes = this.generateNodes();
@@ -191,6 +202,10 @@ _.extend(resourceTile.prototype, {
         color = 'black';
     }
     return color;
+  },
+
+  buildNeighbors: function() {
+    //check each neighbor, if exists, push to
   },
 
   generateNodes: function() {
@@ -338,3 +353,7 @@ _.extend(Node.prototype, {
     );
   }
 });
+
+function Player(nam e) {
+  this.name = name;
+}
